@@ -1,0 +1,17 @@
+.sidebar:hover {
+  box-shadow: 0px 0px 2px 2px gainsboro !important;
+}
+
+.sidebar:active {
+  box-shadow: 0px 0px 0px 0px !important;
+}
+
+.options {
+  padding: 10px;
+  color: black;
+}
+.options p {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
