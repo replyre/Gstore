@@ -1,6 +1,8 @@
+import { ToastContainer } from "react-toastify";
 import "./App.css";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
+import "react-toastify/dist/ReactToastify.css";
 
 import React, { useState } from "react";
 
@@ -15,6 +17,7 @@ function App() {
         <Dashboard user={user} setUser={setUser} />
       )}
       {/* */}
+      <ToastContainer />
     </div>
   );
 }

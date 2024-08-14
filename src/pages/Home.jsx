@@ -44,8 +44,7 @@ const Home = ({ user, setUser }) => {
               alignContent: "center",
               gap: "10px",
               fontWeight: "400",
-
-              fontSize: "50px",
+              fontSize: "3vw",
               width: "80%",
             }}
           >

@@ -11,14 +11,13 @@ import { Box, Divider, LinearProgress } from "@mui/material";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import { db, storage } from "../config/firebaseConfig";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { storage } from "../config/firebaseConfig.js";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
+import Drawer from "@mui/material/Drawer";
+import Button from "@mui/material/Button";
+import { Menu } from "@mui/icons-material";
 
 const FileInput = ({ file, setFile }) => {
   const styles = {
@@ -80,6 +79,87 @@ const FileInput = ({ file, setFile }) => {
   );
 };
 
+function TemporaryDrawer() {
+  const [open, setOpen] = useState(false);
+
+  const toggleDrawer = (newOpen) => () => {
+    setOpen(newOpen);
+  };
+
+  const DrawerList = (
+    <Box
+      sx={{
+        width: 250,
+        height: "88vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+      role="presentation"
+      onClick={toggleDrawer(false)}
+    >
+      <div className="options">
+        <p>
+          <AppSettingsAltIcon /> <span>My Device</span>
+        </p>
+        <p>
+          <DevicesIcon /> <span>Computers</span>
+        </p>
+        <p>
+          <PeopleAltIcon /> <span>Shared with me</span>
+        </p>
+        <p>
+          <ScheduleIcon /> <span> Recent</span>
+        </p>
+        <p>
+          <DeleteIcon /> <span> Trash</span>
+        </p>
+      </div>
+      <div>
+        <Divider />
+        <p>
+          <p style={{ display: "flex", gap: "10px", marginLeft: "10px" }}>
+            <CloudQueueIcon /> <span> Storage</span>
+          </p>
+
+          <Box sx={{ width: "80%", m: "auto" }}>
+            <LinearProgress variant="determinate" value={30} />
+            <p style={{ fontSize: "12px" }}>
+              {" "}
+              <span>108/303 free Storage</span>
+            </p>
+          </Box>
+        </p>
+      </div>
+    </Box>
+  );
+
+  return (
+    <div>
+      <Button
+        onClick={toggleDrawer(true)}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "10px 15px",
+          border: "2px solid grey",
+          width: "fit-content",
+          margin: "10px auto ",
+          borderRadius: "10px",
+          boxShadow: "2px 2px 2px 1px grey",
+          gap: "5px",
+          marginTop: "40px",
+          color: "black",
+        }}
+      >
+        <Menu /> Menu
+      </Button>
+      <Drawer open={open} onClose={toggleDrawer(false)}>
+        {DrawerList}
+      </Drawer>
+    </div>
+  );
+}
 const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
@@ -102,7 +182,7 @@ const Sidebar = () => {
       const snapshot = await uploadBytes(storageRef, file);
       const bytesTransferred = snapshot.metadata.size;
       const url = await getDownloadURL(storageRef);
-
+      const db = getFirestore();
       await addDoc(collection(db, "myfiles"), {
         timestamp: serverTimestamp(),
         filename: file.name,
@@ -111,6 +191,7 @@ const Sidebar = () => {
       });
 
       console.log("File uploaded successfully:", snapshot);
+      setOpen(false);
     } catch (error) {
       console.error("Error uploading file:", error);
     } finally {
@@ -119,21 +200,96 @@ const Sidebar = () => {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "200px",
-        minWidth: "100px",
-        borderRight: "2px solid gainsboro",
-        height: "85vh",
-        display: "flex",
-        justifyContent: "space-between",
-        flexDirection: "column",
-      }}
-    >
+    <>
+      <div className="sidebar-container">
+        <div
+          className="sidebar"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "10px 15px",
+            border: "2px solid grey",
+            width: "fit-content",
+            margin: "10px auto ",
+            borderRadius: "10px",
+            boxShadow: "2px 2px 2px 1px grey",
+            gap: "5px",
+            marginTop: "40px",
+          }}
+          onClick={onOpenModal}
+        >
+          <AddIcon /> <span className="hid">new</span>
+        </div>
+        <div className="options">
+          <p>
+            <AppSettingsAltIcon /> <span className="hid">My Device</span>
+          </p>
+          <p>
+            <DevicesIcon /> <span className="hid">Computers</span>
+          </p>
+          <p>
+            <PeopleAltIcon /> <span className="hid">Shared with me</span>
+          </p>
+          <p>
+            <ScheduleIcon /> <span className="hid"> Recent</span>
+          </p>
+          <p>
+            <DeleteIcon /> <span className="hid"> Trash</span>
+          </p>
+        </div>
+        <div>
+          <Divider />
+          <p>
+            <p style={{ display: "flex", gap: "10px", marginLeft: "10px" }}>
+              <CloudQueueIcon /> <span className="hid"> Storage</span>
+            </p>
+
+            <Box sx={{ width: "80%", m: "auto" }}>
+              <LinearProgress variant="determinate" value={30} />
+              <p style={{ fontSize: "12px" }}>
+                {" "}
+                <span className="hid">108/303 free Storage</span>
+              </p>
+            </Box>
+          </p>
+        </div>
+        <Modal open={open} onClose={onCloseModal} center>
+          <h4 style={{ borderBottom: "2px solid grey", textAlign: "center" }}>
+            Select a file to upload
+          </h4>
+          <FileInput file={file} setFile={setFile} />
+          {file && (
+            <p style={{ display: "flex", alignItems: "center" }}>
+              <InsertDriveFileIcon />
+              {file.name}
+            </p>
+          )}
+          {!uploading ? (
+            <input
+              type="submit"
+              onClick={(e) => handleStorage(e)}
+              style={{
+                borderRadius: "5px",
+                padding: "10px 5px",
+                width: "100%",
+                backgroundColor: "#007bff",
+                color: "white",
+                fontSize: "18px",
+                cursor: "pointer",
+              }}
+            />
+          ) : (
+            <p style={{ textAlign: "center" }}>
+              {" "}
+              <img src="1484.gif" alt="" />
+            </p>
+          )}
+        </Modal>
+      </div>
       <div
-        className="sidebar"
+        className="hid-2"
         style={{
-          display: "flex",
           alignItems: "center",
           justifyContent: "center",
           padding: "10px 15px",
@@ -144,59 +300,21 @@ const Sidebar = () => {
           boxShadow: "2px 2px 2px 1px grey",
           gap: "5px",
           marginTop: "40px",
+          position: "absolute",
+          bottom: "10px",
+          left: "20px",
         }}
         onClick={onOpenModal}
       >
-        <AddIcon /> new
+        <AddIcon /> <span>new</span>
       </div>
-      <div className="options">
-        <p>
-          <AppSettingsAltIcon /> My Device
-        </p>
-        <p>
-          <DevicesIcon /> Computers
-        </p>
-        <p>
-          <PeopleAltIcon /> Shared with me
-        </p>
-        <p>
-          <ScheduleIcon /> Recent
-        </p>
-        <p>
-          <DeleteIcon /> Trash
-        </p>
-      </div>
-      <div>
-        <Divider />
-        <p>
-          <p style={{ display: "flex", gap: "10px", marginLeft: "10px" }}>
-            <CloudQueueIcon /> Storage
-          </p>
-
-          <Box sx={{ width: "80%", m: "auto" }}>
-            <LinearProgress variant="determinate" value={30} />
-            <p style={{ fontSize: "12px" }}>108/303 free Storage</p>
-          </Box>
-        </p>
-      </div>
-      <Modal open={open} onClose={onCloseModal} center>
-        <h4 style={{ borderBottom: "2px solid grey", textAlign: "center" }}>
-          Select a file to upload
-        </h4>
-        <FileInput file={file} setFile={setFile} />
-        {file && (
-          <p style={{ display: "flex", alignItems: "center" }}>
-            <InsertDriveFileIcon />
-            {file.name}
-          </p>
-        )}
-        {!uploading ? (
-          <input type="submit" onClick={(e) => handleStorage(e)} />
-        ) : (
-          <div>uploading</div>
-        )}
-      </Modal>
-    </div>
+      <p
+        style={{ position: "absolute", bottom: "60px", left: "20px" }}
+        className="hid-2"
+      >
+        <TemporaryDrawer />
+      </p>
+    </>
   );
 };
 

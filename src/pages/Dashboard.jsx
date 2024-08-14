@@ -22,6 +22,7 @@ const Dashboard = ({ user, setUser }) => {
             borderRadius: "10px",
             alignContent: "center",
           }}
+          className="hid"
         >
           <InputBase
             sx={{ flex: 1, width: "60vw" }}
